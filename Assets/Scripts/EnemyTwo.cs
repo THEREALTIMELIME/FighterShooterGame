@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyTwo : MonoBehaviour
@@ -8,11 +6,16 @@ public class EnemyTwo : MonoBehaviour
     public float waveFrequency = 2f;
     public float waveMagnitude = 2f;
 
+    public GameObject explosionPrefab;
+    public GameObject shieldPrefab;
+
     float startX;
+    private GameManager gameManager;
 
     void Start()
     {
         startX = transform.position.x;
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
     }
 
     void Update()
@@ -22,8 +25,32 @@ public class EnemyTwo : MonoBehaviour
 
         transform.position = new Vector3(x, y, 0);
 
-        if(transform.position.y < -6.5f)
+        if (transform.position.y < -gameManager.verticalScreenSize)
         {
+            Destroy(gameObject);
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D whatDidIHit)
+    {
+        if (whatDidIHit.tag == "Player")
+        {
+            whatDidIHit.GetComponent<PlayerController>().LoseALife();
+            Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+            Destroy(gameObject);
+        }
+        else if (whatDidIHit.tag == "Weapons")
+        {
+            Destroy(whatDidIHit.gameObject);
+
+            Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+            gameManager.AddScore(10);
+
+            if (Random.value < 0.3f)
+            {
+                Instantiate(shieldPrefab, transform.position, Quaternion.identity);
+            }
+
             Destroy(gameObject);
         }
     }
